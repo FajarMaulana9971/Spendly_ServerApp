@@ -16,4 +16,4 @@ class BaseResponse {
     }
 }
 
-module.exports = BaseResponse;
+export default BaseResponse;

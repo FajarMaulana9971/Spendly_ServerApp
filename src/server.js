@@ -1,5 +1,5 @@
-const app = require('./app');
-const prisma = require('./configs/database');
+import app from './app.js';
+import prisma from './configs/database.js';
 
 const PORT = process.env.PORT || 3000;
 
@@ -33,5 +33,3 @@ const gracefulShutdown = async (signal) => {
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-module.exports = server;

@@ -7,4 +7,4 @@ class ExpenseRequestDto {
     }
 }
 
-module.exports = ExpenseRequestDto;
+export default ExpenseRequestDto;

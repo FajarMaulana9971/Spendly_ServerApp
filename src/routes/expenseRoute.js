@@ -1,9 +1,10 @@
-const express = require('express');
+import express from 'express'
+import expenseController from '../controllers/expenseController.js'
+import cacheMiddleware from '../middlewares/cacheMiddleware.js'
+import validateCreateExpense from '../middlewares/validations/expense-create.middleware.js'
+import validateUpdateExpense from '../middlewares/validations/expense-update.middleware.js'
+
 const router = express.Router();
-const expenseController = require('../controllers/expenseController');
-const cacheMiddleware = require('../middlewares/cacheMiddleware');
-const validateCreateMiddleware = require('../middlewares/validations/expense-create.middleware.');
-const validateUpdateMiddleware = require('../middlewares/validations/expense-update.middleware');
 
 router.get('/', cacheMiddleware(300), expenseController.getAll);
 
@@ -13,10 +14,10 @@ router.get('/stats/monthly/:year/:month', cacheMiddleware(300), expenseControlle
 
 router.get('/:id', cacheMiddleware(300), expenseController.getById);
 
-router.post('/', validateCreateMiddleware, expenseController.create);
+router.post('/', validateCreateExpense, expenseController.create);
 
-router.put('/:id', validateUpdateMiddleware, expenseController.update);
+router.put('/:id', validateUpdateExpense, expenseController.update);
 
 router.delete('/:id', expenseController.delete);
 
-module.exports = router;
+export default router;

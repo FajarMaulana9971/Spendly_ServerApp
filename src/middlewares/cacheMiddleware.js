@@ -1,6 +1,6 @@
-const cache = require('../configs/cache');
+import cache from '../configs/cache.js'
 
-const cacheMiddleware = (duration = 300) => {
+function cacheMiddleware(duration = 300) {
     return (req, res, next) => {
         if (req.method !== 'GET') {
             return next();
@@ -24,6 +24,6 @@ const cacheMiddleware = (duration = 300) => {
 
         next();
     };
-};
+}
 
-module.exports = cacheMiddleware;
+export default cacheMiddleware;
