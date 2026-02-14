@@ -1,5 +1,5 @@
-const expenseRepository = require('../repositories/expenseRepository');
-const cache = require('../configs/cache');
+import expenseRepository from'../repositories/expenseRepository.js'
+import cache from'../configs/cache.js'
 
 class ExpenseService {
     async createExpense(data) {
@@ -80,4 +80,4 @@ class ExpenseService {
     }
 }
 
-module.exports = new ExpenseService();
+export default ExpenseService

@@ -1,4 +1,4 @@
-const prisma = require('../configs/database');
+import prisma from '../configs/database.js'
 
 class ExpenseRepository {
     async create(data) {
@@ -14,7 +14,7 @@ class ExpenseRepository {
     }
 
     async findAll(filters = {}) {
-        const { category, startDate, endDate, sortBy = 'spentAt', sortOrder = 'desc', limit, offset } = filters;
+        const {category, startDate, endDate, sortBy = 'spentAt', sortOrder = 'desc', limit, offset} = filters;
 
         const where = {};
 
@@ -45,7 +45,7 @@ class ExpenseRepository {
 
     async findById(id) {
         return await prisma.expense.findUnique({
-            where: { id }
+            where: {id}
         });
     }
 
@@ -59,14 +59,14 @@ class ExpenseRepository {
         if (data.spentAt !== undefined) updateData.spentAt = new Date(data.spentAt);
 
         return await prisma.expense.update({
-            where: { id },
+            where: {id},
             data: updateData
         });
     }
 
     async delete(id) {
         return await prisma.expense.delete({
-            where: { id }
+            where: {id}
         });
     }
 
@@ -127,7 +127,7 @@ class ExpenseRepository {
     }
 
     async count(filters = {}) {
-        const { category, startDate, endDate } = filters;
+        const {category, startDate, endDate} = filters;
 
         const where = {};
 
@@ -145,8 +145,8 @@ class ExpenseRepository {
             }
         }
 
-        return await prisma.expense.count({ where });
+        return await prisma.expense.count({where});
     }
 }
 
-module.exports = new ExpenseRepository();
+export default ExpenseRepository;

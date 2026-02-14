@@ -1,6 +1,6 @@
-const express = require('express');
-const routes = require('./routes/expenseRoute');
-const errorHandler = require('./middlewares/errorHandlerMiddleware');
+import express from 'express'
+import router from './routes/expenseRoute.js'
+import errorHandler from './middlewares/errorHandlerMiddleware.js'
 
 const app = express();
 
@@ -11,7 +11,7 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.use('/api', routes);
+app.use('/api', router);
 
 app.use((req, res) => {
     res.status(404).json({
@@ -22,4 +22,4 @@ app.use((req, res) => {
 
 app.use(errorHandler);
 
-module.exports = app;
+export default app;

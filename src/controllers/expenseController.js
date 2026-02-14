@@ -1,5 +1,5 @@
-const expenseService = require('../services/expenseService');
-const BaseResponse = require('../dtos/responses/base/baseResponse');
+import expenseService from '../services/expenseService.js'
+import BaseResponse from '../dtos/responses/base/baseResponse.js'
 
 class ExpenseController {
     async create(req, res, next) {
@@ -73,4 +73,4 @@ class ExpenseController {
     }
 }
 
-module.exports = new ExpenseController();
+export default new ExpenseController();

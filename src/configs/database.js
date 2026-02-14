@@ -1,7 +1,13 @@
-const {PrismaClient} = require('@prisma/client');
+import { defineConfig } from "prisma/config";
 
-const prisma = new PrismaClient({
-    log: ['query', 'info', 'warn', 'error'],
+export default defineConfig({
+    schema: "prisma/schema.prisma",
+    migrations: {
+        path: "prisma/migrations",
+    },
+    datasources: {
+        db: {
+            url: process.env.DATABASE_URL,
+        },
+    },
 });
-
-module.exports = prisma;
