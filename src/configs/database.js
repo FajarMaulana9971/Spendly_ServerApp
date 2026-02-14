@@ -1,13 +1,8 @@
-import { defineConfig } from "prisma/config";
+import { PrismaClient } from '@prisma/client'
+import 'dotenv/config'
 
-export default defineConfig({
-    schema: "prisma/schema.prisma",
-    migrations: {
-        path: "prisma/migrations",
-    },
-    datasources: {
-        db: {
-            url: process.env.DATABASE_URL,
-        },
-    },
-});
+const prisma = new PrismaClient({
+    log: ['query', 'info', 'warn', 'error'],
+})
+
+export default prisma

@@ -6,18 +6,18 @@ import validateUpdateExpense from '../middlewares/validations/expense-update.mid
 
 const router = express.Router();
 
-router.get('/', cacheMiddleware(300), expenseController.getAll);
+router.get('/expense', cacheMiddleware(300), expenseController.getAll);
 
-router.get('/stats/category', cacheMiddleware(300), expenseController.getCategoryStats);
+router.get('/expense/stats/category', cacheMiddleware(300), expenseController.getCategoryStats);
 
-router.get('/stats/monthly/:year/:month', cacheMiddleware(300), expenseController.getMonthlyReport);
+router.get('/expense/stats/monthly/:year/:month', cacheMiddleware(300), expenseController.getMonthlyReport);
 
-router.get('/:id', cacheMiddleware(300), expenseController.getById);
+router.get('/expense/:id', cacheMiddleware(300), expenseController.getById);
 
-router.post('/', validateCreateExpense, expenseController.create);
+router.post('/expense', validateCreateExpense, expenseController.create);
 
-router.put('/:id', validateUpdateExpense, expenseController.update);
+router.put('/expense/:id', validateUpdateExpense, expenseController.update);
 
-router.delete('/:id', expenseController.delete);
+router.delete('/expense/:id', expenseController.delete);
 
 export default router;

@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Expense {
@@ -12,7 +13,7 @@ model Expense {
   amount      Int
   category    String
   note        String?
-  spentAt     DateTime
+  spentAt     DateTime @db.Date
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
