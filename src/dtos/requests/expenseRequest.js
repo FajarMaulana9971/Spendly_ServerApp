@@ -1,10 +1,9 @@
-class ExpenseRequestDto {
-    constructor({ amount, category, description, date }) {
-        this.amount = amount;
-        this.category = category;
-        this.description = description;
-        this.date = date;
-    }
-}
+const ExpenseRequest = ({ title, amount, category, note, spentAt }) => ({
+    title,
+    amount,
+    category,
+    note,
+    spentAt
+});
 
-export default ExpenseRequestDto;
+export default ExpenseRequest;

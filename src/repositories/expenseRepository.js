@@ -2,7 +2,7 @@ import prisma from '../configs/database.js'
 
 class ExpenseRepository {
     async create(data) {
-        return await prisma.expense.create({
+        return prisma.expense.create({
             data: {
                 title: data.title,
                 amount: data.amount,
@@ -35,7 +35,7 @@ class ExpenseRepository {
         const orderBy = {};
         orderBy[sortBy] = sortOrder;
 
-        return await prisma.expense.findMany({
+        return prisma.expense.findMany({
             where,
             orderBy,
             take: limit,
@@ -44,7 +44,7 @@ class ExpenseRepository {
     }
 
     async findById(id) {
-        return await prisma.expense.findUnique({
+        return prisma.expense.findUnique({
             where: {id}
         });
     }
@@ -58,20 +58,20 @@ class ExpenseRepository {
         if (data.note !== undefined) updateData.note = data.note;
         if (data.spentAt !== undefined) updateData.spentAt = new Date(data.spentAt);
 
-        return await prisma.expense.update({
+        return prisma.expense.update({
             where: {id},
             data: updateData
         });
     }
 
     async delete(id) {
-        return await prisma.expense.delete({
+        return prisma.expense.delete({
             where: {id}
         });
     }
 
     async getTotalByCategory() {
-        return await prisma.expense.groupBy({
+        return prisma.expense.groupBy({
             by: ['category'],
             _sum: {
                 amount: true
@@ -145,8 +145,8 @@ class ExpenseRepository {
             }
         }
 
-        return await prisma.expense.count({where});
+        return prisma.expense.count({where});
     }
 }
 
-export default ExpenseRepository;
+export default new ExpenseRepository();

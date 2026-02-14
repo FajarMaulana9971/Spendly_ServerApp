@@ -120,7 +120,7 @@ POST /api/expenses
   "success": true,
   "message": "Expense created successfully",
   "data": {
-    "id": "uuid",
+    "id": 999,
     "title": "Makan siang",
     "amount": 50000,
     "category": "Food",
@@ -283,14 +283,6 @@ curl http://localhost:3000/api/expenses/{id}
 - Semua amount disimpan dalam integer (dalam satuan terkecil, misal: Rupiah)
 - Timezone menggunakan UTC, sesuaikan di client jika perlu
 - Cache TTL default adalah 300 detik (5 menit)
-
-## 🔐 Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| DATABASE_URL | PostgreSQL connection string | - |
-| PORT | Server port | 3000 |
-| NODE_ENV | Environment mode | development |
 
 ## 🤝 Contributing
 

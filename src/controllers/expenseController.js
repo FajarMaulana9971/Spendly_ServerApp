@@ -1,10 +1,12 @@
 import expenseService from '../services/expenseService.js'
 import BaseResponse from '../dtos/responses/base/baseResponse.js'
+import RequestExpenseMapper from "../utils/mappers/requestMappers/requestExpenseMapper.js";
 
 class ExpenseController {
     async create(req, res, next) {
         try {
-            const expense = await expenseService.createExpense(req.body);
+            const request = RequestExpenseMapper.toEntity(req.body)
+            const expense = await expenseService.createExpense(request);
             res.status(201).json(BaseResponse.success(expense, 'Expense created successfully'));
         } catch (error) {
             next(error);
@@ -37,7 +39,8 @@ class ExpenseController {
 
     async update(req, res, next) {
         try {
-            const expense = await expenseService.updateExpense(req.params.id, req.body);
+            const request = RequestExpenseMapper.toEntity(req.body)
+            const expense = await expenseService.updateExpense(req.params.id, request);
             res.json(BaseResponse.success(expense, 'Expense updated successfully'));
         } catch (error) {
             next(error);

@@ -1,11 +1,13 @@
-import expenseRepository from'../repositories/expenseRepository.js'
-import cache from'../configs/cache.js'
+import expenseRepository from '../repositories/expenseRepository.js'
+import cache from '../configs/cache.js'
+import ResponseExpenseMapper from "../utils/mappers/responseMappers/responseExpenseMapper.js";
 
 class ExpenseService {
     async createExpense(data) {
         const expense = await expenseRepository.create(data);
         this.invalidateCache();
-        return expense;
+
+        return ResponseExpenseMapper.toPlainObject(expense);
     }
 
     async getAllExpenses(filters) {
@@ -18,8 +20,10 @@ class ExpenseService {
             expenseRepository.count(otherFilters)
         ]);
 
+        const expenseResponse = ResponseExpenseMapper.toPlainObjectArray(expenses)
+
         return {
-            expenses,
+            expenseResponse,
             pagination: {
                 page: Number.parseInt(page),
                 limit: Number.parseInt(limit),
@@ -38,14 +42,14 @@ class ExpenseService {
             throw error;
         }
 
-        return expense;
+        return ResponseExpenseMapper.toPlainObject(expense);
     }
 
     async updateExpense(id, data) {
         await this.getExpenseById(id);
         const updatedExpense = await expenseRepository.update(id, data);
         this.invalidateCache();
-        return updatedExpense;
+        return ResponseExpenseMapper.toPlainObject(updatedExpense);
     }
 
     async deleteExpense(id) {
@@ -66,9 +70,14 @@ class ExpenseService {
     }
 
     async getMonthlyReport(year, month) {
-        return await expenseRepository.getMonthlyStats(year, month);
-    }
+        const report = await expenseRepository.getMonthlyStats(year, month);
 
+        return {
+            expenses: ResponseExpenseMapper.toPlainObjectArray(report.expenses),
+            totalAmount: report.totalAmount,
+            totalCount: report.totalCount
+        };
+    }
     invalidateCache() {
         const keys = cache.keys();
         keys.forEach(key => {
@@ -80,4 +89,4 @@ class ExpenseService {
     }
 }
 
-export default ExpenseService
+export default new ExpenseService()
