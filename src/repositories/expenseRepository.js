@@ -147,6 +147,29 @@ class ExpenseRepository {
 
         return prisma.expense.count({where});
     }
+
+    async findUnpaidByIds(tx, expenseIds) {
+        return tx.expense.findMany({
+            where: {
+                id: { in: expenseIds },
+                isPaid: false
+            }
+        })
+    }
+
+    async updateExpensesAsPaid(tx, expenseIds, paymentId, paidAt) {
+        return tx.expense.updateMany({
+            where: {
+                id: { in: expenseIds },
+                isPaid: false
+            },
+            data: {
+                isPaid: true,
+                paidAt,
+                paymentId
+            }
+        })
+    }
 }
 
 export default new ExpenseRepository();

@@ -13,13 +13,33 @@ model Expense {
   amount      Int
   category    String
   note        String?
-  spentAt     DateTime @db.Date
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isPaid      Boolean  @default(false) @map("is_paid")
+  paidAt      DateTime? @db.Date @map("paid_at")
+  spentAt     DateTime  @db.Date @map("spent_at")
+  paymentId   BigInt?   @map("payment_id")
+  payment     Payment?  @relation(fields: [paymentId], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@index([category])
   @@index([spentAt])
   @@index([createdAt])
   @@index([category, spentAt])
+  @@index([isPaid])
+  @@index([paymentId])
+
   @@map("expenses")
+}
+
+model Payment {
+  id          BigInt   @id @default(autoincrement())
+  totalAmount Int      @map("total_amount")
+  paidAt      DateTime @default(now()) @map("paid_at")
+  note        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  expenses    Expense[]
+
+  @@map("payments")
 }

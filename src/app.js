@@ -1,5 +1,6 @@
 import express from 'express'
-import router from './routes/expenseRoute.js'
+import expenseRouter from './routes/expenseRoute.js'
+import paymentRouter from './routes/paymentRoute.js'
 import errorHandler from './middlewares/errorHandlerMiddleware.js'
 
 const app = express();
@@ -11,7 +12,8 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.use('/api', router);
+app.use('/api', expenseRouter);
+app.use('/api', paymentRouter);
 
 app.use((req, res) => {
     res.status(404).json({
