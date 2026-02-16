@@ -1,6 +1,6 @@
 import ExpenseRequest from "../../../dtos/requests/expenseRequest.js";
 
-class RequestExpenseMapper{
+class RequestExpenseMapper {
     static fromBody(body) {
         return ExpenseRequest({
             title: body.title,
@@ -17,6 +17,7 @@ class RequestExpenseMapper{
         if (expenseRequest.title !== undefined) entity.title = expenseRequest.title;
         if (expenseRequest.amount !== undefined) entity.amount = expenseRequest.amount;
         if (expenseRequest.category !== undefined) entity.category = expenseRequest.category;
+        if (expenseRequest.isSplitBill !== undefined) entity.isSplitBill = expenseRequest.isSplitBill;
         if (expenseRequest.note !== undefined) entity.note = expenseRequest.note;
         if (expenseRequest.spentAt !== undefined) entity.spentAt = expenseRequest.spentAt;
 
@@ -28,4 +29,5 @@ class RequestExpenseMapper{
         return this.toEntity(expenseRequest);
     }
 }
+
 export default RequestExpenseMapper;
