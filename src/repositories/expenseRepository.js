@@ -6,8 +6,11 @@ class ExpenseRepository {
             data: {
                 title: data.title,
                 amount: data.amount,
+                finalAmount : data.finalAmount,
                 category: data.category,
                 note: data.note || null,
+                isPaid: data.isPaid,
+                isSplitBill: data.isSplitBill,
                 spentAt: new Date(data.spentAt)
             }
         });

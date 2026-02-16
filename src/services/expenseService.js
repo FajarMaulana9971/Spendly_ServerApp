@@ -4,8 +4,10 @@ import ResponseExpenseMapper from "../utils/mappers/responseMappers/responseExpe
 
 class ExpenseService {
     async createExpense(data) {
-        const expense = await expenseRepository.create(data);
-        this.invalidateCache();
+
+        const finalAmount = data.isSplitBill ? Math.floor(data.amount / 2) : data.amount;
+        const expense = await expenseRepository.create({...data, finalAmount});
+        this.invalidateCache()
 
         return ResponseExpenseMapper.toPlainObject(expense);
     }
