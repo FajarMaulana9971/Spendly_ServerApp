@@ -1,13 +1,10 @@
-const ExpenseRequest = ({title, amount, category, note, isPaid, isSplitBill, paidAt, paymentId, spentAt}) => ({
+const ExpenseRequest = ({title, amount, category, note, isSplitBill, paidAt, spentAt}) => ({
     title,
     amount,
     category,
     note,
-    isPaid,
     isSplitBill,
-    paidAt,
-    paymentId,
-    spentAt
+    paidAt, spentAt
 });
 
 export default ExpenseRequest;

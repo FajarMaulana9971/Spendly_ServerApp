@@ -46,9 +46,13 @@ class ResponseExpenseMapper {
             id: expense.id.toString(),
             title: expense.title,
             amount: expense.amount,
+            finalAmount: expense.finalAmount,
             category: expense.category,
             note: expense.note,
+            isPaid: expense.isPaid,
+            isSplitBill: expense.isSplitBill,
             spentAt: expense.spentAt,
+            paymentId: expense.payment?.id?.toString() || null,
             createdAt: expense.createdAt,
             updatedAt: expense.updatedAt
         };
