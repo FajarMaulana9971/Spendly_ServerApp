@@ -20,7 +20,7 @@ class PaymentService {
                 throw new Error("Some expenses are already paid or not found")
             }
 
-            const calculatedTotal = expenses.reduce((sum, e) => sum + e.amount, 0)
+            const calculatedTotal = expenses.reduce((sum, e) => sum + e.totalAmount, 0)
 
             if (calculatedTotal !== totalAmount) {
                 throw new Error("Total amount mismatch")

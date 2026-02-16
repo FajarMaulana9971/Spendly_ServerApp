@@ -1,10 +1,27 @@
-export const ExpenseResponse = ({ id, title, amount, category, note, spentAt, createdAt, updatedAt }) => ({
+export const ExpenseResponse = ({
+                                    id,
+                                    title,
+                                    amount,
+                                    actualAmount,
+                                    category,
+                                    note,
+                                    isPaid,
+                                    isSplitBill,
+                                    spentAt,
+                                    paymentId,
+                                    createdAt,
+                                    updatedAt
+                                }) => ({
     id,
     title,
     amount,
+    actualAmount,
     category,
     note,
+    isPaid,
+    isSplitBill,
     spentAt,
+    paymentId,
     createdAt,
     updatedAt
 });
