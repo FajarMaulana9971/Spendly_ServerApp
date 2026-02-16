@@ -12,15 +12,19 @@ export const toPaymentBySelectedExpenseResponse = (payment) => {
         note: payment.note,
         createdAt: payment.createdAt,
         updatedAt: payment.updatedAt,
-        expenses: payment.expenses.map(exp => ({
+        expenses: payment.expenses?.map(exp => ({
             id: exp.id.toString(),
             title: exp.title,
             amount: exp.amount,
+            finalAmount: exp.finalAmount,
             category: exp.category,
             note: exp.note,
+            isPaid: exp.isPaid,
+            isSplitBill: exp.isSplitBill,
             spentAt: exp.spentAt,
+            paymentId: exp.paymentId?.toString() ?? null,
             createdAt: exp.createdAt,
             updatedAt: exp.updatedAt
-        }))
+        })) ?? []
     })
 }
