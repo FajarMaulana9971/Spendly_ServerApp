@@ -51,6 +51,15 @@ class PaymentController {
       next(err);
     }
   }
+
+  async getTotalPaid(req, res, next) {
+    try {
+      const result = await paymentService.getTotalPaid();
+      res.json(BaseResponse.success(result));
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new PaymentController();

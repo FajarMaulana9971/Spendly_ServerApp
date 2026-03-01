@@ -16,6 +16,63 @@ class ExpenseRepository {
     });
   }
 
+  async findAllWithPayment({
+    limit = 10,
+    offset = 0,
+    sortBy = "spentAt",
+    sortOrder = "desc",
+  }) {
+    const [rows, total] = await prisma.$transaction([
+      prisma.expense.findMany({
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        take: limit,
+        skip: offset,
+        select: {
+          id: true,
+          title: true,
+          amount: true,
+          finalAmount: true,
+          category: true,
+          isPaid: true,
+          isSplitBill: true,
+          spentAt: true,
+          paidAt: true,
+          // payment: {
+          //     select: {
+          //         paidAt: true
+          //     }
+          // }
+        },
+      }),
+      prisma.expense.count(),
+    ]);
+
+    const data = rows.map((e) => ({
+      id: e.id,
+      title: e.title,
+      amount: e.amount,
+      finalAmount: e.finalAmount,
+      category: e.category,
+      isPaid: e.isPaid,
+      isSplitBill: e.isSplitBill,
+      spentAt: e.spentAt,
+      paidAt: e.paidAt,
+      // paymentPaidAt: e.paidAt,
+    }));
+
+    return {
+      data,
+      pagination: {
+        total,
+        limit,
+        offset,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
   async findAll(filters = {}) {
     const {
       category,
@@ -105,41 +162,25 @@ class ExpenseRepository {
 
   async getMonthlyStats(year, month) {
     const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
-    const [expenses, stats] = await Promise.all([
-      prisma.expense.findMany({
-        where: {
-          spentAt: {
-            gte: startDate,
-            lte: endDate,
-          },
+    const grouped = await prisma.expense.groupBy({
+      by: ["isPaid"],
+      where: {
+        spentAt: {
+          gte: startDate,
+          lte: endDate,
         },
-        orderBy: {
-          spentAt: "desc",
-        },
-      }),
-      prisma.expense.aggregate({
-        where: {
-          spentAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-        },
-        _sum: {
-          amount: true,
-        },
-        _count: {
-          id: true,
-        },
-      }),
-    ]);
+      },
+      _sum: {
+        finalAmount: true,
+      },
+      _count: {
+        id: true,
+      },
+    });
 
-    return {
-      expenses,
-      totalAmount: stats._sum.amount || 0,
-      totalCount: stats._count.id || 0,
-    };
+    return grouped;
   }
 
   async count(filters = {}) {
@@ -185,6 +226,18 @@ class ExpenseRepository {
         paymentId,
       },
     });
+  }
+
+  async getTotalExpense(isPaid = null) {
+    const where = {};
+    if (isPaid !== null) where.isPaid = isPaid;
+
+    const result = await prisma.expense.aggregate({
+      where,
+      _sum: { finalAmount: true },
+    });
+
+    return result._sum.finalAmount ?? 0;
   }
 }
 

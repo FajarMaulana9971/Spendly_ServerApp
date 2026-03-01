@@ -83,6 +83,14 @@ class PaymentRepository {
       },
     });
   }
+
+  async getTotalPaid() {
+    const result = await prisma.payment.aggregate({
+      _sum: { totalAmount: true },
+    });
+
+    return result._sum.totalAmount ?? 0;
+  }
 }
 
 export default new PaymentRepository();

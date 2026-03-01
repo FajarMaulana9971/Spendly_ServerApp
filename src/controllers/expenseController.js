@@ -15,6 +15,33 @@ class ExpenseController {
     }
   }
 
+  async getAllWithPaymentPaidAt(req, res, next) {
+    try {
+      const { page = 1, limit = 10 } = req.query || {};
+
+      const result =
+        await expenseService.getAllExpensesWithPaymentPaidAtResponse({
+          page,
+          limit,
+        });
+
+      res.json(BaseResponse.success(result));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMonthlyReport(req, res, next) {
+    try {
+      const { year, month } = req.query;
+      const result = await expenseService.getMonthlyReport(year, month);
+
+      res.json(BaseResponse.success(result));
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getAll(req, res, next) {
     try {
       const {
@@ -94,6 +121,16 @@ class ExpenseController {
         Number.parseInt(month),
       );
       res.json(BaseResponse.success(report));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getTotalExpense(req, res, next) {
+    try {
+      const { type } = req.query;
+      const result = await expenseService.getTotalExpense(type);
+      res.json(BaseResponse.success(result));
     } catch (error) {
       next(error);
     }

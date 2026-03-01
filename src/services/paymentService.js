@@ -66,13 +66,13 @@ class PaymentService {
       paymentRepository.count(otherFilters),
     ]);
 
-    const paymentResponse =
+    const payments =
       ResponsePaymentBySelectedExpenseMapper.mappingForUnSpecificPayment(
         payment,
       );
 
     return {
-      paymentResponse,
+      payments,
       pagination: {
         page: Number.parseInt(page),
         limit: Number.parseInt(limit),
@@ -95,6 +95,73 @@ class PaymentService {
     return ResponsePaymentBySelectedExpenseMapper.mappingForSpecificPayment(
       payment,
     );
+  }
+
+  async getMonthlyReport(year, month) {
+    if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+      const error = new Error("Tahun atau bulan tidak valid");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const { expenses } = await expenseRepository.getMonthlyStats(year, month);
+
+    // ---- Agregasi summary keseluruhan ----
+    let totalAmount = 0;
+    let paidAmount = 0;
+    let unpaidAmount = 0;
+
+    // ---- Siapkan dailyMap untuk semua hari di bulan itu ----
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const dailyMap = {};
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      dailyMap[dateStr] = {
+        date: dateStr,
+        paidAmount: 0,
+        unpaidAmount: 0,
+        totalAmount: 0,
+      };
+    }
+
+    // ---- Isi dailyMap dari data expense ----
+    for (const exp of expenses) {
+      const effectiveAmount = exp.finalAmount ?? exp.amount;
+      const isPaid = exp.isPaid || exp.paymentId !== null;
+
+      totalAmount += effectiveAmount;
+
+      const d = exp.spentAt;
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+      if (dailyMap[dateStr]) {
+        dailyMap[dateStr].totalAmount += effectiveAmount;
+
+        if (isPaid) {
+          paidAmount += effectiveAmount;
+          dailyMap[dateStr].paidAmount += effectiveAmount;
+        } else {
+          unpaidAmount += effectiveAmount;
+          dailyMap[dateStr].unpaidAmount += effectiveAmount;
+        }
+      }
+    }
+
+    return {
+      year,
+      month,
+      totalAmount,
+      paidAmount,
+      unpaidAmount,
+      expenseCount: expenses.length,
+      daily: Object.values(dailyMap),
+    };
+  }
+
+  async getTotalPaid() {
+    const totalAmount = await paymentRepository.getTotalPaid();
+    return { totalAmount };
   }
 }
 

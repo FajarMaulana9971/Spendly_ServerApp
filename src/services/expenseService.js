@@ -13,6 +13,32 @@ class ExpenseService {
     return ResponseExpenseMapper.toPlainObject(expense);
   }
 
+  async getAllExpensesWithPaymentPaidAtResponse({ page = 1, limit = 10 }) {
+    const parsedPage = Number.parseInt(page);
+    const parsedLimit = Number.parseInt(limit);
+
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const result = await expenseRepository.findAllWithPayment({
+      limit: parsedLimit,
+      offset,
+    });
+
+    const mapped = result.data.map(
+      ResponseExpenseMapper.toExpenseResponseWithSpecificPayment,
+    );
+
+    return {
+      expenses: mapped,
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total: result.pagination.total,
+        totalPages: result.pagination.totalPages,
+      },
+    };
+  }
+
   async getAllExpenses(filters) {
     const { page = 1, limit = 10, ...otherFilters } = filters;
 
@@ -77,14 +103,46 @@ class ExpenseService {
   }
 
   async getMonthlyReport(year, month) {
-    const report = await expenseRepository.getMonthlyStats(year, month);
+    if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+      const error = new Error("Tahun atau bulan tidak valid");
+      error.statusCode = 400;
+      throw error;
+    }
 
-    return {
-      expenses: ResponseExpenseMapper.toPlainObjectArray(report.expenses),
-      totalAmount: report.totalAmount,
-      totalCount: report.totalCount,
+    const grouped = await expenseRepository.getMonthlyStats(year, month);
+
+    let paidAmount = 0;
+    let unpaidAmount = 0;
+    let paidCount = 0;
+    let unpaidCount = 0;
+
+    for (const row of grouped) {
+      if (row.isPaid) {
+        paidAmount = row._sum.finalAmount ?? 0;
+        paidCount = row._count.id ?? 0;
+      } else {
+        unpaidAmount = row._sum.finalAmount ?? 0;
+        unpaidCount = row._count.id ?? 0;
+      }
+    }
+
+    const totalAmount = paidAmount + unpaidAmount;
+    const totalCount = paidCount + unpaidCount;
+
+    const report = {
+      year,
+      month,
+      totalAmount,
+      paidAmount,
+      unpaidAmount,
+      totalCount,
+      paidCount,
+      unpaidCount,
     };
+
+    return ResponseExpenseMapper.toMonthlyReportResponse(report);
   }
+
   invalidateCache() {
     const keys = cache.keys();
     keys.forEach((key) => {
@@ -93,6 +151,21 @@ class ExpenseService {
       }
     });
     console.log("Cache invalidated");
+  }
+
+  async getTotalExpense(type) {
+    let isPaid = null;
+
+    if (type === "paid") isPaid = true;
+    else if (type === "unpaid") isPaid = false;
+    else if (type !== undefined) {
+      const error = new Error("type harus 'paid' atau 'unpaid'");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const totalExpense = await expenseRepository.getTotalExpense(isPaid);
+    return { totalExpense };
   }
 }
 
