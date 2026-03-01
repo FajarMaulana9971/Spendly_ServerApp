@@ -119,6 +119,9 @@ class ExpenseRepository {
   async findById(id) {
     return prisma.expense.findUnique({
       where: { id },
+      include: {
+        payment: true,
+      },
     });
   }
 

@@ -1,6 +1,7 @@
 import ExpenseResponse from "../../../dtos/responses/expenseResponse.js";
 import ExpenseResponseWithSpecificPaymentResponse from "../../../dtos/responses/expenseResponseWithSpecificPayment.js";
-import MonthlyReportResponse from "../../../dtos/responses/monthlyReportResponse";
+import MonthlyReportResponse from "../../../dtos/responses/monthlyReportResponse.js";
+import PaymentBySelectedExpenseResponse from "../../../dtos/responses/paymentBySelectedExpenseResponse.js";
 
 class ResponseExpenseMapper {
   static toResponse(expense) {
@@ -103,6 +104,34 @@ class ResponseExpenseMapper {
       paidCount: report.paidCount,
       unpaidCount: report.unpaidCount,
     });
+  }
+
+  static toResponseWithPayment(expense) {
+    if (!expense) return null;
+
+    return {
+      id: expense.id?.toString(),
+      title: expense.title,
+      amount: expense.amount,
+      finalAmount: expense.finalAmount,
+      category: expense.category,
+      note: expense.note,
+      isPaid: expense.isPaid,
+      isSplitBill: expense.isSplitBill,
+      spentAt: expense.spentAt,
+      payment: expense.payment
+        ? PaymentBySelectedExpenseResponse({
+            id: expense.payment.id?.toString(),
+            totalAmount: expense.payment.totalAmount,
+            paidAt: expense.payment.paidAt,
+            note: expense.payment.note,
+            createdAt: expense.payment.createdAt,
+            updatedAt: expense.payment.updatedAt,
+          })
+        : null,
+      createdAt: expense.createdAt,
+      updatedAt: expense.updatedAt,
+    };
   }
 }
 

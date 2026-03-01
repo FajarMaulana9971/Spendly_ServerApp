@@ -75,7 +75,7 @@ class ExpenseService {
       throw error;
     }
 
-    return ResponseExpenseMapper.toPlainObject(expense);
+    return ResponseExpenseMapper.toResponseWithPayment(expense);
   }
 
   async updateExpense(id, data) {
