@@ -49,7 +49,7 @@ class ResponseExpenseMapper {
   static toPlainObject(expense) {
     if (!expense) return null;
 
-    return {
+    return ExpenseResponse({
       id: expense.id.toString(),
       title: expense.title,
       amount: expense.amount,
@@ -62,7 +62,7 @@ class ResponseExpenseMapper {
       paymentId: expense.payment?.id?.toString() || null,
       createdAt: expense.createdAt,
       updatedAt: expense.updatedAt,
-    };
+    });
   }
 
   static toPlainObjectArray(expenses) {
