@@ -78,10 +78,30 @@ class ExpenseService {
     return ResponseExpenseMapper.toResponseWithPayment(expense);
   }
 
-  async updateExpense(id, data) {
-    await this.getExpenseById(id);
-    const updatedExpense = await expenseRepository.update(id, data);
+  async updateExpense(id, request) {
+    const existing = await this.getExpenseById(id);
+
+    const amount =
+      request.amount !== undefined ? request.amount : existing.amount;
+
+    const isSplitBill =
+      request.isSplitBill !== undefined
+        ? request.isSplitBill
+        : existing.isSplitBill;
+
+    const finalAmount = isSplitBill ? amount / 2 : amount;
+
+    const finalData = {
+      ...request,
+      amount,
+      isSplitBill,
+      finalAmount,
+    };
+
+    const updatedExpense = await expenseRepository.update(id, finalData);
+
     this.invalidateCache();
+
     return ResponseExpenseMapper.toPlainObject(updatedExpense);
   }
 
