@@ -1,7 +1,6 @@
 import paymentService from "../services/paymentService.js";
 import BaseResponse from "../dtos/responses/base/baseResponse.js";
 import { requestPaymentMapper } from "../utils/mappers/requestMappers/requestPaymentMapper.js";
-import ResponsePaymentBySelectedExpenseMapper from "../utils/mappers/responseMappers/responsePaymentMapper.js";
 
 class PaymentController {
   async payBySelectedExpenses(req, res, next) {

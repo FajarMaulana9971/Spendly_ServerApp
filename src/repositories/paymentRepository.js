@@ -14,15 +14,13 @@ class PaymentRepository {
       limit,
       offset,
     } = filters;
+
     const where = {};
 
     if (startDate || endDate) {
-      if (startDate) {
-        where.createdAt.gte = new Date(startDate);
-      }
-      if (endDate) {
-        where.updatedAt.lte = new Date(endDate);
-      }
+      where.paidAt = {};
+      if (startDate) where.paidAt.gte = new Date(startDate);
+      if (endDate) where.paidAt.lte = new Date(endDate);
     }
 
     const orderBy = {};
@@ -33,6 +31,12 @@ class PaymentRepository {
       orderBy,
       take: limit,
       skip: offset,
+      include: {
+        expenses: {
+          select: { spentAt: true },
+          orderBy: { spentAt: "asc" },
+        },
+      },
     });
   }
 
@@ -42,13 +46,9 @@ class PaymentRepository {
     const where = {};
 
     if (startDate || endDate) {
-      where.spentAt = {};
-      if (startDate) {
-        where.spentAt.gte = new Date(startDate);
-      }
-      if (endDate) {
-        where.spentAt.lte = new Date(endDate);
-      }
+      where.paidAt = {};
+      if (startDate) where.paidAt.gte = new Date(startDate);
+      if (endDate) where.paidAt.lte = new Date(endDate);
     }
 
     return prisma.payment.count({ where });

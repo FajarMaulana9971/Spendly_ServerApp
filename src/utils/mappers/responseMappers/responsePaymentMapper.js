@@ -32,21 +32,29 @@ class ResponsePaymentBySelectedExpenseMapper {
     });
   }
 
-  static mappingForUnSpecificPayment(payment) {
-    if (!payment) {
+  static mappingForUnSpecificPayment(payments) {
+    if (!payments) {
       throw new Error("Payment not found");
     }
 
-    return payment.map((payment) =>
-      PaymentResponse({
+    return payments.map((payment) => {
+      const spentDates = payment.expenses?.map((e) => e.spentAt) ?? [];
+      const minSpentAt = spentDates.length > 0 ? spentDates[0] : null;
+      const maxSpentAt =
+        spentDates.length > 0 ? spentDates[spentDates.length - 1] : null;
+
+      return PaymentResponse({
         id: payment.id.toString(),
         totalAmount: payment.totalAmount,
         paidAt: payment.paidAt,
         note: payment.note,
         createdAt: payment.createdAt,
         updatedAt: payment.updatedAt,
-      }),
-    );
+        minSpentAt,
+        maxSpentAt,
+        expenseCount: spentDates.length,
+      });
+    });
   }
 }
 
