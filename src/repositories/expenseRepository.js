@@ -78,7 +78,7 @@ class ExpenseRepository {
       category,
       startDate,
       endDate,
-      sortBy = "spentAt",
+      sortBy = "createdAt",
       sortOrder = "desc",
       limit,
       offset,
@@ -130,8 +130,12 @@ class ExpenseRepository {
 
     if (data.title !== undefined) updateData.title = data.title;
     if (data.amount !== undefined) updateData.amount = data.amount;
+    if (data.finalAmount !== undefined)
+      updateData.finalAmount = data.finalAmount;
     if (data.category !== undefined) updateData.category = data.category;
     if (data.note !== undefined) updateData.note = data.note;
+    if (data.isSplitBill != undefined)
+      updateData.isSplitBill = data.isSplitBill;
     if (data.spentAt !== undefined) updateData.spentAt = new Date(data.spentAt);
 
     return prisma.expense.update({
