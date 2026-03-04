@@ -1,10 +1,13 @@
-export const PaymentBySelectedExpenseResponse = ({
+const PaymentResponse = ({
   id,
   totalAmount,
   paidAt,
   note,
   createdAt,
   updatedAt,
+  minSpentAt,
+  maxSpentAt,
+  expenseCount,
 }) => ({
   id,
   totalAmount,
@@ -12,6 +15,9 @@ export const PaymentBySelectedExpenseResponse = ({
   note,
   createdAt,
   updatedAt,
+  minSpentAt,
+  maxSpentAt,
+  expenseCount,
 });
 
-export default PaymentBySelectedExpenseResponse;
+export default PaymentResponse;

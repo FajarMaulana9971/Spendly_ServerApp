@@ -1,7 +1,6 @@
 import prisma from "../configs/database.js";
 import paymentRepository from "../repositories/paymentRepository.js";
 import expenseRepository from "../repositories/expenseRepository.js";
-import ResponseExpenseMapper from "../utils/mappers/responseMappers/responseExpenseMapper.js";
 import ResponsePaymentBySelectedExpenseMapper from "../utils/mappers/responseMappers/responsePaymentMapper.js";
 
 class PaymentService {
