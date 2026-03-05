@@ -82,6 +82,26 @@ class ExpenseController {
     }
   }
 
+  async dailyBulk(req, res, next) {
+    try {
+      const result = await expenseService.createDailyBulk(req.body);
+      res.json(BaseResponse.success(result, "Daily Bulk successfully created"));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getExpensesDailyStatus(req, res, next) {
+    try {
+      const { startDate, endDate } = req.query;
+
+      const result = await expenseService.getDailyStatus(startDate, endDate);
+
+      res.json(BaseResponse.success(result));
+    } catch (err) {
+      next(err);
+    }
+  }
   async update(req, res, next) {
     try {
       const request = RequestExpenseMapper.toEntity(req.body);

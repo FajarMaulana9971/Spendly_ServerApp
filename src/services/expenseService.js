@@ -105,6 +105,47 @@ class ExpenseService {
     return ResponseExpenseMapper.toPlainObject(updatedExpense);
   }
 
+  async createDailyBulk(request) {
+    const { expenses } = request;
+
+    if (!expenses || !Array.isArray(expenses)) {
+      return res.status(400).json({
+        message: "expenses harus array",
+      });
+    }
+
+    const result = await expenseRepository.createBulkExpense(expenses);
+    return {
+      inserted: result.count,
+    };
+  }
+
+  async getDailyStatus(startDate, endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const expenses = await expenseRepository.getDailyExpensesStatus(start, end);
+
+    const map = new Map();
+
+    for (const e of expenses) {
+      const date = e.spentAt.toLocaleDateString("sv-SE");
+
+      if (!map.has(date)) {
+        map.set(date, {
+          date,
+          exists: false,
+        });
+      }
+
+      if (e.category === "Harian") {
+        map.get(date).exists = true;
+      }
+    }
+
+    return Array.from(map.values());
+  }
+
   async deleteExpense(id) {
     await this.getExpenseById(id);
     const deletedExpense = await expenseRepository.delete(id);

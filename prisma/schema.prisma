@@ -11,7 +11,7 @@ model Expense {
   id           BigInt    @id @default(autoincrement())
   title        String
   amount       Int
-  finalAmount Int?       @map("final_amount")
+  finalAmount  Int?      @map("final_amount")
   category     String
   note         String?
   isPaid       Boolean   @default(false) @map("is_paid")
@@ -23,12 +23,13 @@ model Expense {
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  @@index([category])
-  @@index([spentAt])
-  @@index([createdAt])
+  @@index([isPaid, spentAt])  
   @@index([category, spentAt])
+  @@index([spentAt, id])
+  @@index([category])
   @@index([isPaid])
   @@index([paymentId])
+
   @@map("expenses")
 }
 

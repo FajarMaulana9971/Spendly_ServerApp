@@ -9,6 +9,11 @@ const expenseRouter = express.Router();
 expenseRouter.get("/expense", cacheMiddleware(300), expenseController.getAll);
 
 expenseRouter.get(
+  "/expenses/daily-status",
+  expenseController.getExpensesDailyStatus,
+);
+
+expenseRouter.get(
   "/expense/total",
   cacheMiddleware(300),
   expenseController.getTotalExpense,
@@ -19,6 +24,8 @@ expenseRouter.get(
   cacheMiddleware(300),
   expenseController.getAllWithPaymentPaidAt,
 );
+
+expenseRouter.post("/expense/daily-bulk", expenseController.dailyBulk);
 
 expenseRouter.get(
   "/expense/stats/category",

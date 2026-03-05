@@ -246,6 +246,46 @@ class ExpenseRepository {
 
     return result._sum.finalAmount ?? 0;
   }
+
+  async createBulkExpense(expenses) {
+    const formatted = expenses.map((e) => ({
+      title: e.title,
+      amount: e.amount,
+      finalAmount: e.amount,
+      category: e.category,
+      note: e.note,
+      isSplitBill: e.isSplitBill ?? false,
+      spentAt: new Date(e.spentAt),
+    }));
+
+    const result = await prisma.expense.createMany({
+      data: formatted,
+      skipDuplicates: true,
+    });
+
+    return result;
+  }
+
+  async getDailyExpensesStatus(startDate, endDate) {
+    const expenses = await prisma.expense.findMany({
+      where: {
+        isPaid: false,
+        spentAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        spentAt: true,
+        category: true,
+      },
+      orderBy: {
+        spentAt: "asc",
+      },
+    });
+
+    return expenses;
+  }
 }
 
 export default new ExpenseRepository();
