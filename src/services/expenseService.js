@@ -115,6 +115,8 @@ class ExpenseService {
     }
 
     const result = await expenseRepository.createBulkExpense(expenses);
+
+    this.invalidateCache();
     return {
       inserted: result.count,
     };
