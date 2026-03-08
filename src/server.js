@@ -1,35 +1,35 @@
-import app from './app.js';
-import prisma from './configs/database.js';
+import app from "./app.js";
+import prisma from "./configs/database.js";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || process.env.ALWAYSDATA_HTTPD_PORT || 3000;
+const HOST = process.env.IP || process.env.ALWAYSDATA_HTTPD_IP || "0.0.0.0";
 
-const server = app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+const server = app.listen(PORT, HOST, () => {
+  console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
 });
 
 const gracefulShutdown = async (signal) => {
-    console.log(`\n${signal} received. Starting graceful shutdown...`);
+  console.log(`\n${signal} received. Starting graceful shutdown...`);
 
-    server.close(async () => {
-        console.log('HTTP server closed');
+  server.close(async () => {
+    console.log("HTTP server closed");
 
-        try {
-            await prisma.$disconnect();
-            console.log('Database connection closed');
-            process.exit(0);
-        } catch (error) {
-            console.error('Error during shutdown:', error);
-            process.exit(1);
-        }
-    });
+    try {
+      await prisma.$disconnect();
+      console.log("Database connection closed");
+      process.exit(0);
+    } catch (error) {
+      console.error("Error during shutdown:", error);
+      process.exit(1);
+    }
+  });
 
-    setTimeout(() => {
-        console.error('Forced shutdown after timeout');
-        process.exit(1);
-    }, 10000);
+  setTimeout(() => {
+    console.error("Forced shutdown after timeout");
+    process.exit(1);
+  }, 10000);
 };
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
