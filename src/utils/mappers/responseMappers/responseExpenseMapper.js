@@ -1,4 +1,4 @@
-import ExpenseResponse from "../../../dtos/responses/expenseResponse.js";
+import ExpenseResponse from "../../../dtos/responses/expense-response.js";
 import ExpenseResponseWithSpecificPaymentResponse from "../../../dtos/responses/expenseResponseWithSpecificPayment.js";
 import MonthlyReportResponse from "../../../dtos/responses/monthlyReportResponse.js";
 import PaymentBySelectedExpenseResponse from "../../../dtos/responses/paymentBySelectedExpenseResponse.js";
