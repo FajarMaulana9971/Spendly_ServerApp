@@ -1,5 +1,5 @@
 import expenseRepository from "../repositories/expenseRepository.js";
-import cache from "../configs/cache.js";
+import redisClient from "../configs/cache.js";
 import ResponseExpenseMapper from "../utils/mappers/responseMappers/responseExpenseMapper.js";
 
 class ExpenseService {
@@ -8,7 +8,7 @@ class ExpenseService {
       ? Math.floor(data.amount / 2)
       : data.amount;
     const expense = await expenseRepository.create({ ...data, finalAmount });
-    this.invalidateCache();
+    await this.invalidateCache();
 
     return ResponseExpenseMapper.toPlainObject(expense);
   }
@@ -100,7 +100,7 @@ class ExpenseService {
 
     const updatedExpense = await expenseRepository.update(id, finalData);
 
-    this.invalidateCache();
+    await this.invalidateCache();
 
     return ResponseExpenseMapper.toPlainObject(updatedExpense);
   }
@@ -109,14 +109,14 @@ class ExpenseService {
     const { expenses } = request;
 
     if (!expenses || !Array.isArray(expenses)) {
-      return res.status(400).json({
-        message: "expenses harus array",
-      });
+      const error = new Error("expenses harus array");
+      error.statusCode = 400;
+      throw error;
     }
 
     const result = await expenseRepository.createBulkExpense(expenses);
 
-    this.invalidateCache();
+    await this.invalidateCache();
     return {
       inserted: result.count,
     };
@@ -151,7 +151,7 @@ class ExpenseService {
   async deleteExpense(id) {
     await this.getExpenseById(id);
     const deletedExpense = await expenseRepository.delete(id);
-    this.invalidateCache();
+    await this.invalidateCache();
     return deletedExpense;
   }
 
@@ -206,14 +206,31 @@ class ExpenseService {
     return ResponseExpenseMapper.toMonthlyReportResponse(report);
   }
 
-  invalidateCache() {
-    const keys = cache.keys();
-    keys.forEach((key) => {
-      if (key.startsWith("cache_")) {
-        cache.del(key);
-      }
-    });
-    console.log("Cache invalidated");
+  async invalidateCache() {
+    try {
+      if (!redisClient.isOpen) return;
+
+      // Scan and delete all keys with prefix "cache_"
+      let cursor = 0;
+      let deletedCount = 0;
+
+      do {
+        const reply = await redisClient.scan(cursor, {
+          MATCH: "cache_*",
+          COUNT: 100,
+        });
+        cursor = reply.cursor;
+
+        if (reply.keys.length > 0) {
+          await redisClient.del(reply.keys);
+          deletedCount += reply.keys.length;
+        }
+      } while (cursor !== 0);
+
+      console.log(`🗑️ Cache invalidated: ${deletedCount} keys deleted`);
+    } catch (err) {
+      console.error("❌ Cache invalidation error:", err.message);
+    }
   }
 
   async getTotalExpense(type) {

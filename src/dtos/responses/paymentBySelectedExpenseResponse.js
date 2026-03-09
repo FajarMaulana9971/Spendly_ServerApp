@@ -1,4 +1,4 @@
-import { ExpenseResponse } from "./expense-response.js";
+import { ExpenseResponse } from "./expenseResponse.js";
 
 export const PaymentBySelectedExpenseResponse = ({
   id,

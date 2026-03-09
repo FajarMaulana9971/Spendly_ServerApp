@@ -1,8 +1,8 @@
 import app from "./app.js";
 import prisma from "./configs/database.js";
 
-const PORT = process.env.PORT || process.env.ALWAYSDATA_HTTPD_PORT || 3000;
-const HOST = process.env.IP || process.env.ALWAYSDATA_HTTPD_IP || "0.0.0.0";
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
 
 const server = app.listen(PORT, HOST, () => {
   console.log(`🚀 Server running on http://${HOST}:${PORT}`);
@@ -33,3 +33,5 @@ const gracefulShutdown = async (signal) => {
 
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
+export default app;

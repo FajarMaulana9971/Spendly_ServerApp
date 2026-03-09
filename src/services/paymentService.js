@@ -2,6 +2,7 @@ import prisma from "../configs/database.js";
 import paymentRepository from "../repositories/paymentRepository.js";
 import expenseRepository from "../repositories/expenseRepository.js";
 import ResponsePaymentBySelectedExpenseMapper from "../utils/mappers/responseMappers/responsePaymentMapper.js";
+import redisClient from "../configs/cache.js";
 
 class PaymentService {
   async payBySelectedExpenses(request) {
@@ -45,6 +46,8 @@ class PaymentService {
         include: { expenses: true },
       });
 
+      await this.invalidateCache();
+
       return ResponsePaymentBySelectedExpenseMapper.mappingForSpecificPayment(
         paymentWithExpenses,
       );
@@ -56,22 +59,19 @@ class PaymentService {
 
     const offset = (page - 1) * limit;
 
-    const [payment, total] = await Promise.all([
-      paymentRepository.findAll({
-        ...otherFilters,
-        limit: Number.parseInt(limit),
-        offset,
-      }),
-      paymentRepository.count(otherFilters),
-    ]);
+    const { payments, total } = await paymentRepository.findAllWithCount({
+      ...otherFilters,
+      limit: Number.parseInt(limit),
+      offset,
+    });
 
-    const payments =
+    const mappedPayments =
       ResponsePaymentBySelectedExpenseMapper.mappingForUnSpecificPayment(
-        payment,
+        payments,
       );
 
     return {
-      payments,
+      payments: mappedPayments,
       pagination: {
         page: Number.parseInt(page),
         limit: Number.parseInt(limit),
@@ -105,12 +105,10 @@ class PaymentService {
 
     const { expenses } = await expenseRepository.getMonthlyStats(year, month);
 
-    // ---- Agregasi summary keseluruhan ----
     let totalAmount = 0;
     let paidAmount = 0;
     let unpaidAmount = 0;
 
-    // ---- Siapkan dailyMap untuk semua hari di bulan itu ----
     const daysInMonth = new Date(year, month, 0).getDate();
     const dailyMap = {};
 
@@ -124,7 +122,6 @@ class PaymentService {
       };
     }
 
-    // ---- Isi dailyMap dari data expense ----
     for (const exp of expenses) {
       const effectiveAmount = exp.finalAmount ?? exp.amount;
       const isPaid = exp.isPaid || exp.paymentId !== null;
@@ -136,7 +133,6 @@ class PaymentService {
 
       if (dailyMap[dateStr]) {
         dailyMap[dateStr].totalAmount += effectiveAmount;
-
         if (isPaid) {
           paidAmount += effectiveAmount;
           dailyMap[dateStr].paidAmount += effectiveAmount;
@@ -161,6 +157,32 @@ class PaymentService {
   async getTotalPaid() {
     const totalAmount = await paymentRepository.getTotalPaid();
     return { totalAmount };
+  }
+
+  async invalidateCache() {
+    try {
+      if (!redisClient.isOpen) return;
+
+      let cursor = 0;
+      let deletedCount = 0;
+
+      do {
+        const reply = await redisClient.scan(cursor, {
+          MATCH: "cache_*",
+          COUNT: 100,
+        });
+        cursor = reply.cursor;
+
+        if (reply.keys.length > 0) {
+          await redisClient.del(reply.keys);
+          deletedCount += reply.keys.length;
+        }
+      } while (cursor !== 0);
+
+      console.log(`🗑️ Cache invalidated: ${deletedCount} keys deleted`);
+    } catch (err) {
+      console.error("❌ Cache invalidation error:", err.message);
+    }
   }
 }
 
