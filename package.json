@@ -8,6 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "build": "prisma generate",
     "postinstall": "prisma generate"
   },
   "keywords": [],
@@ -18,8 +19,8 @@
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-    "node-cache": "^5.1.2",
-    "prisma": "^6.10.0"
+    "prisma": "^6.10.0",
+    "redis": "^4.7.0"
   },
   "devDependencies": {
     "@types/node": "^25.2.3",

@@ -1,0 +1,36 @@
+name: Keep Alive - Ping Spendly API
+
+on:
+  schedule:
+    # Ping every 10 minutes to prevent Vercel serverless cold starts
+    - cron: "*/10 * * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    name: Ping API Health
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Ping /ping endpoint
+        run: |
+          echo "⏰ $(date -u) - Pinging Spendly API..."
+          
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 15 \
+            --retry 3 \
+            --retry-delay 2 \
+            "${{ secrets.API_URL }}/ping")
+          
+          if [ "$RESPONSE" = "200" ]; then
+            echo "✅ API is alive! Status: $RESPONSE"
+          else
+            echo "⚠️ API returned unexpected status: $RESPONSE"
+            exit 1
+          fi
+
+      - name: Ping /health endpoint
+        run: |
+          HEALTH=$(curl -s --max-time 15 "${{ secrets.API_URL }}/health")
+          echo "🏥 Health response: $HEALTH"

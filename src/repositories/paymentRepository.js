@@ -5,6 +5,46 @@ class PaymentRepository {
     return tx.payment.create({ data });
   }
 
+  async findAllWithCount(filters = {}) {
+    const {
+      startDate,
+      endDate,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      limit,
+      offset,
+    } = filters;
+
+    const where = {};
+
+    if (startDate || endDate) {
+      where.paidAt = {};
+      if (startDate) where.paidAt.gte = new Date(startDate);
+      if (endDate) where.paidAt.lte = new Date(endDate);
+    }
+
+    const orderBy = {};
+    orderBy[sortBy] = sortOrder;
+
+    const [payments, total] = await prisma.$transaction([
+      prisma.payment.findMany({
+        where,
+        orderBy,
+        take: limit,
+        skip: offset,
+        include: {
+          expenses: {
+            select: { spentAt: true },
+            orderBy: { spentAt: "asc" },
+          },
+        },
+      }),
+      prisma.payment.count({ where }),
+    ]);
+
+    return { payments, total };
+  }
+
   async findAll(filters = {}) {
     const {
       startDate,
