@@ -235,10 +235,7 @@ class ExpenseRepository {
     });
   }
 
-  async getExpenseWhereIsPaidIsFalse({
-    limit = 10,
-    offset = 0,
-  } = {}) {
+  async getExpenseWhereIsPaidIsFalse() {
     const where = {
       isPaid: false,
       paidAt: null,
@@ -250,8 +247,6 @@ class ExpenseRepository {
         orderBy: {
           id: "asc",
         },
-        take: limit,
-        skip: offset,
         select: {
           id: true,
           title: true,

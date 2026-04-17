@@ -14,7 +14,7 @@ expenseRouter.get(
 );
 
 expenseRouter.get(
-  "/expenses/unpaid",
+  "/expenses/unpaid", cacheMiddleware(300),
   expenseController.getAllExpenseWithPaymentIsFalse,
 );
 
