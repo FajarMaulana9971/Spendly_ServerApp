@@ -15,6 +15,15 @@ class ExpenseController {
     }
   }
 
+  async getAllExpenseWithPaymentIsFalse(req, res, next){
+    try {
+      const result = await expenseService.getExpenseWhereIsPaidIsFalse();
+      res.json(BaseResponse.success(result));
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getAllWithPaymentPaidAt(req, res, next) {
     try {
       const { page = 1, limit = 10 } = req.query || {};
