@@ -149,8 +149,11 @@ class ExpenseService {
   }
 
   async getExpenseWhereIsPaidIsFalse(){
-    const data = await expenseRepository.getExpenseWhereIsPaidIsFalse();
-    return ResponseExpenseMapper.expensForPaymentResponse(data);
+    const result = await expenseRepository.getExpenseWhereIsPaidIsFalse();
+
+    return result.data.map(expense => 
+      ResponseExpenseMapper.expensForPaymentResponse(expense)
+    );
   }
 
   async deleteExpense(id) {
