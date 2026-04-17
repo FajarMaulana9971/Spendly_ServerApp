@@ -149,7 +149,7 @@ class ExpenseService {
   }
 
   async getExpenseWhereIsPaidIsFalse(){
-    const data = expenseRepository.getExpenseWhereIsPaidIsFalse();
+    const data = await expenseRepository.getExpenseWhereIsPaidIsFalse();
     return ResponseExpenseMapper.expensForPaymentResponse(data);
   }
 
