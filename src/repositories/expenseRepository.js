@@ -235,6 +235,49 @@ class ExpenseRepository {
     });
   }
 
+  async getExpenseWhereIsPaidIsFalse({
+    limit = 10,
+    offset = 0,
+  } = {}) {
+    const where = {
+      isPaid: false,
+      paidAt: null,
+    };
+
+    const [rows, total] = await prisma.$transaction([
+      prisma.expense.findMany({
+        where,
+        orderBy: {
+          id: "asc",
+        },
+        take: limit,
+        skip: offset,
+        select: {
+          id: true,
+          title: true,
+          amount: true,
+          finalAmount: true,
+          category: true,
+          isSplitBill: true,
+          spentAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      prisma.expense.count({ where }),
+    ]);
+
+    return {
+      data: rows,
+      pagination: {
+        total,
+        limit,
+        offset,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
   async getTotalExpense(isPaid = null) {
     const where = {};
     if (isPaid !== null) where.isPaid = isPaid;
