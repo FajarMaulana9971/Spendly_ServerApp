@@ -16,66 +16,9 @@ class ExpenseRepository {
     });
   }
 
-  async findAllWithPayment({
-    limit = 10,
-    offset = 0,
-    sortBy = "spentAt",
-    sortOrder = "desc",
-  }) {
-    const [rows, total] = await prisma.$transaction([
-      prisma.expense.findMany({
-        orderBy: {
-          [sortBy]: sortOrder,
-        },
-        take: limit,
-        skip: offset,
-        select: {
-          id: true,
-          title: true,
-          amount: true,
-          finalAmount: true,
-          category: true,
-          isPaid: true,
-          isSplitBill: true,
-          spentAt: true,
-          paidAt: true,
-          // payment: {
-          //     select: {
-          //         paidAt: true
-          //     }
-          // }
-        },
-      }),
-      prisma.expense.count(),
-    ]);
-
-    const data = rows.map((e) => ({
-      id: e.id,
-      title: e.title,
-      amount: e.amount,
-      finalAmount: e.finalAmount,
-      category: e.category,
-      isPaid: e.isPaid,
-      isSplitBill: e.isSplitBill,
-      spentAt: e.spentAt,
-      paidAt: e.paidAt,
-      // paymentPaidAt: e.paidAt,
-    }));
-
-    return {
-      data,
-      pagination: {
-        total,
-        limit,
-        offset,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
-
   async findAll(filters = {}) {
     const {
-      category,
+      title,
       startDate,
       endDate,
       sortBy = "createdAt",
@@ -87,8 +30,11 @@ class ExpenseRepository {
 
     const where = {};
 
-    if (category) {
-      where.category = category;
+    if (title) {
+      where.title={
+        contains: title,
+        mode: 'insensitive'
+      }
     }
 
     if (startDate || endDate) {
@@ -191,22 +137,24 @@ class ExpenseRepository {
   }
 
   async count(filters = {}) {
-    const { category, startDate, endDate } = filters;
-
+    const { title, startDate, endDate, paid } = filters;
     const where = {};
 
-    if (category) {
-      where.category = category;
+    if (title) {
+      where.title = {
+        contains: title,
+        mode: 'insensitive',
+      };
     }
 
     if (startDate || endDate) {
       where.spentAt = {};
-      if (startDate) {
-        where.spentAt.gte = new Date(startDate);
-      }
-      if (endDate) {
-        where.spentAt.lte = new Date(endDate);
-      }
+      if (startDate) where.spentAt.gte = new Date(startDate);
+      if (endDate) where.spentAt.lte = new Date(endDate);
+    }
+
+    if (paid != undefined) {
+      where.isPaid = paid === 'false';
     }
 
     return prisma.expense.count({ where });

@@ -13,32 +13,6 @@ class ExpenseService {
     return ResponseExpenseMapper.toPlainObject(expense);
   }
 
-  async getAllExpensesWithPaymentPaidAtResponse({ page = 1, limit = 10 }) {
-    const parsedPage = Number.parseInt(page);
-    const parsedLimit = Number.parseInt(limit);
-
-    const offset = (parsedPage - 1) * parsedLimit;
-
-    const result = await expenseRepository.findAllWithPayment({
-      limit: parsedLimit,
-      offset,
-    });
-
-    const mapped = result.data.map(
-      ResponseExpenseMapper.toExpenseResponseWithSpecificPayment,
-    );
-
-    return {
-      expenses: mapped,
-      pagination: {
-        page: parsedPage,
-        limit: parsedLimit,
-        total: result.pagination.total,
-        totalPages: result.pagination.totalPages,
-      },
-    };
-  }
-
   async getAllExpenses(filters) {
     const { page = 1, limit = 10, ...otherFilters } = filters;
 
