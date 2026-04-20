@@ -24,22 +24,6 @@ class ExpenseController {
     }
   }
 
-  async getAllWithPaymentPaidAt(req, res, next) {
-    try {
-      const { page = 1, limit = 10 } = req.query || {};
-
-      const result =
-        await expenseService.getAllExpensesWithPaymentPaidAtResponse({
-          page,
-          limit,
-        });
-
-      res.json(BaseResponse.success(result));
-    } catch (error) {
-      next(error);
-    }
-  }
-
   async getMonthlyReport(req, res, next) {
     try {
       const { year, month } = req.query;
@@ -56,7 +40,7 @@ class ExpenseController {
       const {
         page,
         limit,
-        category,
+        title,
         startDate,
         endDate,
         sortBy,
@@ -67,7 +51,7 @@ class ExpenseController {
       const filters = {
         page,
         limit,
-        category,
+        title,
         startDate,
         endDate,
         sortBy,

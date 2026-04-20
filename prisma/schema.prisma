@@ -27,6 +27,7 @@ model Expense {
   @@index([category, spentAt])
   @@index([spentAt, id])
   @@index([category])
+  @@index([title])
   @@index([isPaid])
   @@index([paymentId])
 

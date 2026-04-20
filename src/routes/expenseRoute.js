@@ -24,12 +24,6 @@ expenseRouter.get(
   expenseController.getTotalExpense,
 );
 
-expenseRouter.get(
-  "/expense/specific",
-  cacheMiddleware(300),
-  expenseController.getAllWithPaymentPaidAt,
-);
-
 expenseRouter.post("/expense/daily-bulk", expenseController.dailyBulk);
 
 expenseRouter.get(
