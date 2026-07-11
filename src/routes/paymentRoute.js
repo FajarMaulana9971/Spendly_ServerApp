@@ -7,6 +7,12 @@ const paymentRouter = express.Router();
 paymentRouter.post("/payment", paymentController.payBySelectedExpenses);
 
 paymentRouter.get(
+  "/payment/search-by-amount",
+  cacheMiddleware(60),
+  paymentController.searchByAmount,
+);
+
+paymentRouter.get(
   "/payment/total-paid",
   cacheMiddleware(300),
   paymentController.getTotalPaid,

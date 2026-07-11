@@ -62,6 +62,102 @@ class ExpenseRepository {
     });
   }
 
+  /**
+   * Membangun `where` clause dari filters umum (title, startDate, endDate, paid).
+   * Dipakai bareng oleh findDistinctDates, countDistinctDates, dan findAllByDates
+   * supaya kondisi filter selalu konsisten di ketiganya.
+   */
+  _buildDateFilterWhere(filters = {}) {
+    const { title, startDate, endDate, paid } = filters;
+    const where = {};
+
+    if (title) {
+      where.title = {
+        contains: title,
+        mode: "insensitive",
+      };
+    }
+
+    if (startDate || endDate) {
+      where.spentAt = {};
+      if (startDate) where.spentAt.gte = new Date(startDate);
+      if (endDate) where.spentAt.lte = new Date(endDate);
+    }
+
+    if (paid != undefined) {
+      where.isPaid = paid === "true";
+    }
+
+    return where;
+  }
+
+  /**
+   * Ambil N tanggal unik (spentAt) sesuai filter, untuk keperluan pagination
+   * berbasis hari/header (bukan berbasis baris expense).
+   */
+  async findDistinctDates(filters = {}) {
+    const { sortOrder = "desc", limit, offset } = filters;
+    const where = this._buildDateFilterWhere(filters);
+
+    return prisma.expense.findMany({
+      where,
+      distinct: ["spentAt"],
+      select: { spentAt: true },
+      orderBy: { spentAt: sortOrder },
+      take: limit,
+      skip: offset,
+    });
+  }
+
+  /**
+   * Total tanggal unik yang cocok dengan filter (dipakai untuk totalPages).
+   */
+  async countDistinctDates(filters = {}) {
+    const where = this._buildDateFilterWhere(filters);
+
+    const dates = await prisma.expense.findMany({
+      where,
+      distinct: ["spentAt"],
+      select: { spentAt: true },
+    });
+
+    return dates.length;
+  }
+
+  /**
+   * Ambil semua expense untuk sekumpulan tanggal tertentu (satu halaman = N hari).
+   * sortBy/sortOrder di sini hanya mengurutkan transaksi DI DALAM tanggal yang sama;
+   * urutan tanggal itu sendiri tetap mengikuti findDistinctDates.
+   */
+  async findAllByDates(dates, filters = {}) {
+    const { title, paid, sortBy = "spentAt", sortOrder = "desc" } = filters;
+
+    if (!dates || dates.length === 0) return [];
+
+    const where = { spentAt: { in: dates } };
+
+    if (title) {
+      where.title = {
+        contains: title,
+        mode: "insensitive",
+      };
+    }
+
+    if (paid != undefined) {
+      where.isPaid = paid === "true";
+    }
+
+    const orderBy =
+      sortBy === "spentAt"
+        ? { spentAt: sortOrder }
+        : [{ spentAt: sortOrder }, { [sortBy]: sortOrder }];
+
+    return prisma.expense.findMany({
+      where,
+      orderBy,
+    });
+  }
+
   async findById(id) {
     return prisma.expense.findUnique({
       where: { id },
@@ -154,7 +250,9 @@ class ExpenseRepository {
     }
 
     if (paid != undefined) {
-      where.isPaid = paid === 'false';
+      // FIX: sebelumnya `paid === 'false'` (kebalik), harusnya sama seperti
+      // findAll/findAllByDates supaya total count konsisten dengan filter status.
+      where.isPaid = paid === 'true';
     }
 
     return prisma.expense.count({ where });
@@ -183,29 +281,33 @@ class ExpenseRepository {
     });
   }
 
-    async getExpenseWhereIsPaidIsFalse() {
-      return prisma.expense.findMany({
-        where: {
-          isPaid: false,
-          paidAt: null,
-        },
-        orderBy: {
-          id: "asc",
-        },
-        select: {
-          id: true,
-          title: true,
-          amount: true,
-          finalAmount: true,
-          category: true,
-          isSplitBill: true,
-          spentAt: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-  }
+  async getExpenseWhereIsPaidIsFalse(filters = {}) {
+    const { startDate, endDate } = filters;
+    const where = { isPaid: false, paidAt: null };
 
+    if (startDate || endDate) {
+      where.spentAt = {};
+      if (startDate) where.spentAt.gte = new Date(startDate);
+      if (endDate) where.spentAt.lte = new Date(endDate);
+    }
+
+    return prisma.expense.findMany({
+      where,
+      orderBy: { spentAt: "asc" },
+      select: {
+        id: true,
+        title: true,
+        amount: true,
+        finalAmount: true,
+        category: true,
+        isSplitBill: true,
+        spentAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+  
   async getTotalExpense(isPaid = null) {
     const where = {};
     if (isPaid !== null) where.isPaid = isPaid;
@@ -257,6 +359,27 @@ class ExpenseRepository {
 
     return expenses;
   }
+
+  async findUnpaidForAmountSearch(maxAmount) {
+    return prisma.expense.findMany({
+      where: {
+        isPaid: false,
+        paidAt: null,
+        finalAmount: { lte: maxAmount },
+      },
+      orderBy: { finalAmount: "desc" },
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        amount: true,
+        finalAmount: true,
+        isSplitBill: true,
+        spentAt: true,
+      },
+    });
+  }
 }
+
 
 export default new ExpenseRepository();
