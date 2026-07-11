@@ -2,9 +2,54 @@ import prisma from "../configs/database.js";
 import paymentRepository from "../repositories/paymentRepository.js";
 import expenseRepository from "../repositories/expenseRepository.js";
 import ResponsePaymentBySelectedExpenseMapper from "../utils/mappers/responseMappers/responsePaymentMapper.js";
+import { findAmountCombinations } from "../utils/subsetSum.js";
 import redisClient from "../configs/cache.js";
 
 class PaymentService {
+
+   async searchByAmount(amount) {
+    const candidates = await expenseRepository.findUnpaidForAmountSearch(amount);
+
+    const items = candidates.map((e) => ({
+      id: e.id.toString(),
+      amount: e.finalAmount ?? e.amount,
+    }));
+
+    const { combinations, truncated } = findAmountCombinations(items, amount, {
+      maxSolutions: 15,
+      maxNodes: 300000,
+    });
+
+    if (combinations.length === 0) {
+      return {
+        found: false,
+        combinations: [],
+        message: `Tidak ada pembayaran dengan jumlah Rp ${amount.toLocaleString("id-ID")}`,
+      };
+    }
+
+    const byId = new Map(candidates.map((e) => [e.id.toString(), e]));
+
+    const detailedCombinations = combinations.map((combo) => ({
+      expenseIds: combo.expenseIds,
+      totalAmount: combo.totalAmount,
+      expenses: combo.expenseIds.map((id) => {
+        const e = byId.get(id);
+        return {
+          id: e.id.toString(),
+          title: e.title,
+          category: e.category,
+          amount: e.amount,
+          finalAmount: e.finalAmount,
+          isSplitBill: e.isSplitBill,
+          spentAt: e.spentAt,
+        };
+      }),
+    }));
+
+    return { found: true, combinations: detailedCombinations, truncated };
+  }
+  
   async payBySelectedExpenses(request) {
     const { totalAmount, paidAt, note, expenseIds } = request;
 

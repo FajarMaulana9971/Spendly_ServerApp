@@ -13,29 +13,59 @@ class ExpenseService {
     return ResponseExpenseMapper.toPlainObject(expense);
   }
 
+  /**
+   * Pagination di sini berbasis TANGGAL UNIK (header), bukan berbasis baris expense.
+   * `limit` = jumlah hari per halaman. Response tetap berupa list flat expense,
+   * tapi isinya adalah seluruh transaksi dari N hari yang dipilih untuk halaman ini
+   * (jumlah barisnya bisa lebih dari `limit`, tergantung banyak transaksi per hari).
+   *
+   * sortBy/sortOrder untuk field selain 'spentAt' hanya mengurutkan transaksi
+   * DI DALAM hari yang sama — urutan hari (dan hari mana yang masuk halaman berapa)
+   * tetap mengikuti spentAt + sortOrder, supaya satu hari tidak pernah terpotong
+   * di dua halaman berbeda.
+   */
   async getAllExpenses(filters) {
-    const { page = 1, limit = 10, ...otherFilters } = filters;
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = "spentAt",
+      sortOrder = "desc",
+      ...otherFilters
+    } = filters;
 
-    const offset = (page - 1) * limit;
+    const parsedLimit = Number.parseInt(limit);
+    const parsedPage = Number.parseInt(page);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    const [expenses, total] = await Promise.all([
-      expenseRepository.findAll({
+    const [dateRows, totalDates, totalItems] = await Promise.all([
+      expenseRepository.findDistinctDates({
         ...otherFilters,
-        limit: Number.parseInt(limit),
+        sortOrder,
+        limit: parsedLimit,
         offset,
       }),
+      expenseRepository.countDistinctDates(otherFilters),
       expenseRepository.count(otherFilters),
     ]);
+
+    const dates = dateRows.map((d) => d.spentAt);
+
+    const expenses = await expenseRepository.findAllByDates(dates, {
+      ...otherFilters,
+      sortBy,
+      sortOrder,
+    });
 
     const expenseResponse = ResponseExpenseMapper.toResponseArray(expenses);
 
     return {
       expenseResponse,
       pagination: {
-        page: Number.parseInt(page),
-        limit: Number.parseInt(limit),
-        total,
-        totalPages: Math.ceil(total / limit),
+        page: parsedPage,
+        limit: parsedLimit,
+        total: totalDates, // total hari (header) yang cocok dengan filter
+        totalPages: Math.max(Math.ceil(totalDates / parsedLimit), 1),
+        totalItems, // total transaksi (semua item) yang cocok dengan filter
       },
     };
   }
@@ -122,10 +152,9 @@ class ExpenseService {
     return Array.from(map.values());
   }
 
-  async getExpenseWhereIsPaidIsFalse(){
-    const result = await expenseRepository.getExpenseWhereIsPaidIsFalse();
-
-    return result.map(expense => 
+  async getExpenseWhereIsPaidIsFalse(filters = {}) {
+    const result = await expenseRepository.getExpenseWhereIsPaidIsFalse(filters);
+    return result.map(expense =>
       ResponseExpenseMapper.expensForPaymentResponse(expense)
     );
   }

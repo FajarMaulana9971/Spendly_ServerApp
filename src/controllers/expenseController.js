@@ -148,6 +148,16 @@ class ExpenseController {
       next(error);
     }
   }
+
+  async getAllExpenseWithPaymentIsFalse(req, res, next) {
+    try {
+      const { startDate, endDate } = req.query;
+      const data = await expenseService.getExpenseWhereIsPaidIsFalse({ startDate, endDate });
+      res.json({ success: true, data: { expenseResponse: data } });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export default new ExpenseController();
