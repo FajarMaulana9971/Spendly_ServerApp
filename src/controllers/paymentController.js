@@ -16,6 +16,22 @@ class PaymentController {
     }
   }
 
+  async searchByAmount(req, res, next) {
+    try {
+      const amount = Number.parseInt(req.query.amount, 10);
+      if (!amount || amount <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Parameter 'amount' harus angka positif",
+        });
+      }
+      const result = await paymentService.searchByAmount(amount);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getAllPayments(req, res, next) {
     try {
       const { page, limit, startDate, endDate, sortBy, sortOrder } = req.query;
