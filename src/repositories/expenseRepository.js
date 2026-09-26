@@ -342,7 +342,6 @@ class ExpenseRepository {
   async getDailyExpensesStatus(startDate, endDate) {
     const expenses = await prisma.expense.findMany({
       where: {
-        isPaid: false,
         spentAt: {
           gte: startDate,
           lte: endDate,
